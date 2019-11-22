@@ -38,24 +38,24 @@ module.exports = {
         },
         nav: [
           {
-            text: '文章',
+            text: '指南',
             link: '/guide/',
           },
         ],
         sidebar: {
-          '/guide/': getiOSConfig(),
+          '/guide/': genSidebarConfig(),
         }
       }
     }
   }
 }
-function getiOSConfig () {
+function genSidebarConfig (title) {
   return [
     {
-      title:"iOS",
+      title,
       collapsable: false,
       children: [
-        'index',
+        '',
       ]
     }
   ]
