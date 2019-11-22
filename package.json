@@ -1,0 +1,19 @@
+{
+  "name": "bairdweng-blog",
+  "version": "1.0.0",
+  "description": "我的博客",
+  "author": "bairdweng",
+  "private": true,
+  "scripts": {
+    "dev": "vuepress dev docs",
+    "build": "vuepress build docs"
+  },
+  "keywords": [
+    "bairdweng"
+  ],
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "vuepress": "^1.0.2"
+  }
+}
