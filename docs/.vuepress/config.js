@@ -1,6 +1,6 @@
 module.exports = {
-  base: '/blog/',
-  dest: 'blog',
+  base: '/',
+  dest: './dist',
   locales: {
     '/': {
       lang: 'zh-CN',
