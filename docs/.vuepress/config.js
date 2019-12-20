@@ -51,15 +51,20 @@ module.exports = {
 }
 function genSidebarConfig() {
 	return [
-		{
-			title: 'iOS',
-			collapsable: true,
-			children: ['ios/start'],
-		},
+		// {
+		// 	title: 'iOS',
+		// 	collapsable: true,
+		// 	children: ['ios/start'],
+		// },
 		// {
 		// 	title: 'Web',
 		// 	collapsable: true,
 		// 	children: ['web/start'],
 		// },
+		{
+			title: '设计模式',
+			collapsable: true,
+			children: ['design/start'],
+		},
 	]
 }
