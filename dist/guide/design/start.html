@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>RAC+MVVM | BairdWeng</title>
+    <meta name="description" content="杂谈">
+    <link rel="icon" href="/blog/dist/logo.png">
+  <link rel="manifest" href="/blog/dist/manifest.json">
+  <meta name="theme-color" content="#3eaf7c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="apple-touch-icon" href="/blog/dist/icons/apple-touch-icon-152x152.png">
+  <link rel="mask-icon" href="/blog/dist/icons/safari-pinned-tab.svg" color="#3eaf7c">
+  <meta name="msapplication-TileImage" content="/icons/msapplication-icon-144x144.png">
+  <meta name="msapplication-TileColor" content="#000000">
+    
+    <link rel="preload" href="/blog/dist/assets/css/0.styles.856e60f3.css" as="style"><link rel="preload" href="/blog/dist/assets/js/app.8a71f5eb.js" as="script"><link rel="preload" href="/blog/dist/assets/js/2.fc5b6cde.js" as="script"><link rel="preload" href="/blog/dist/assets/js/9.1644c349.js" as="script"><link rel="prefetch" href="/blog/dist/assets/js/10.d39c68af.js"><link rel="prefetch" href="/blog/dist/assets/js/11.90f7e761.js"><link rel="prefetch" href="/blog/dist/assets/js/12.d18549ba.js"><link rel="prefetch" href="/blog/dist/assets/js/3.2c415b34.js"><link rel="prefetch" href="/blog/dist/assets/js/4.fc6dec37.js"><link rel="prefetch" href="/blog/dist/assets/js/5.46673389.js"><link rel="prefetch" href="/blog/dist/assets/js/6.38f6ba9e.js"><link rel="prefetch" href="/blog/dist/assets/js/7.dff7f18c.js"><link rel="prefetch" href="/blog/dist/assets/js/8.ea1ef871.js">
+    <link rel="stylesheet" href="/blog/dist/assets/css/0.styles.856e60f3.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/blog/dist/" class="home-link router-link-active"><!----> <span class="site-name">BairdWeng</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/blog/dist/guide/" class="nav-link router-link-active">指南</a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/blog/dist/guide/" class="nav-link router-link-active">指南</a></div> <!----></nav>  <ul class="sidebar-links"><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading open"><span>设计模式</span> <span class="arrow down"></span></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/blog/dist/guide/design/start.html" class="active sidebar-link">RAC+MVVM</a></li></ul></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="rac-mvvm"><a href="#rac-mvvm" class="header-anchor">#</a> RAC+MVVM</h1> <blockquote><p>什么是mvvm?，简单的一个列表，然后请求数据展示。我们看看ViewController。</p></blockquote> <div class="language-js extra-class"><pre class="language-js"><code>    <span class="token keyword">import</span> UIKit
+    <span class="token keyword">import</span> RxSwift
+    <span class="token keyword">import</span> RxCocoa
+    <span class="token keyword">class</span> <span class="token class-name">LanguageListViewController</span><span class="token punctuation">:</span> UIViewController <span class="token punctuation">{</span>
+
+      <span class="token keyword">let</span> disposeBag <span class="token operator">=</span> <span class="token function">DisposeBag</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+      <span class="token keyword">var</span> viewModel<span class="token punctuation">:</span> LanguageListViewModel<span class="token operator">!</span>
+
+      @IBOutlet <span class="token keyword">private</span> weak <span class="token keyword">var</span> tableView<span class="token punctuation">:</span> UITableView<span class="token operator">!</span>
+      <span class="token keyword">private</span> <span class="token keyword">let</span> cancelButton <span class="token operator">=</span> <span class="token function">UIBarButtonItem</span><span class="token punctuation">(</span>barButtonSystemItem<span class="token punctuation">:</span> <span class="token punctuation">.</span>cancel<span class="token punctuation">,</span> target<span class="token punctuation">:</span> nil<span class="token punctuation">,</span> action<span class="token punctuation">:</span> nil<span class="token punctuation">)</span>
+
+      override func <span class="token function">viewDidLoad</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+          <span class="token keyword">super</span><span class="token punctuation">.</span><span class="token function">viewDidLoad</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+          <span class="token function">setupUI</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+          <span class="token function">setupBindings</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token keyword">private</span> func <span class="token function">setupUI</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+          navigationItem<span class="token punctuation">.</span>leftBarButtonItem <span class="token operator">=</span> cancelButton
+          navigationItem<span class="token punctuation">.</span>title <span class="token operator">=</span> <span class="token string">&quot;Choose a language&quot;</span>
+
+          tableView<span class="token punctuation">.</span>rowHeight <span class="token operator">=</span> <span class="token number">48.0</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token keyword">private</span> func <span class="token function">setupBindings</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+          viewModel<span class="token punctuation">.</span>languages
+              <span class="token punctuation">.</span><span class="token function">observeOn</span><span class="token punctuation">(</span>MainScheduler<span class="token punctuation">.</span>instance<span class="token punctuation">)</span>
+              <span class="token punctuation">.</span><span class="token function">bind</span><span class="token punctuation">(</span>to<span class="token punctuation">:</span> tableView<span class="token punctuation">.</span>rx<span class="token punctuation">.</span><span class="token function">items</span><span class="token punctuation">(</span>cellIdentifier<span class="token punctuation">:</span> <span class="token string">&quot;LanguageCell&quot;</span><span class="token punctuation">,</span> cellType<span class="token punctuation">:</span> UITableViewCell<span class="token punctuation">.</span>self<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token punctuation">(</span>_<span class="token punctuation">,</span> language<span class="token punctuation">,</span> cell<span class="token punctuation">)</span> <span class="token keyword">in</span>
+                  cell<span class="token punctuation">.</span>textLabel<span class="token operator">?</span><span class="token punctuation">.</span>text <span class="token operator">=</span> language
+                  cell<span class="token punctuation">.</span>selectionStyle <span class="token operator">=</span> <span class="token punctuation">.</span>none
+              <span class="token punctuation">}</span>
+              <span class="token punctuation">.</span><span class="token function">disposed</span><span class="token punctuation">(</span>by<span class="token punctuation">:</span> disposeBag<span class="token punctuation">)</span>
+
+          tableView<span class="token punctuation">.</span>rx<span class="token punctuation">.</span><span class="token function">modelSelected</span><span class="token punctuation">(</span>String<span class="token punctuation">.</span>self<span class="token punctuation">)</span>
+              <span class="token punctuation">.</span><span class="token function">bind</span><span class="token punctuation">(</span>to<span class="token punctuation">:</span> viewModel<span class="token punctuation">.</span>selectLanguage<span class="token punctuation">)</span>
+              <span class="token punctuation">.</span><span class="token function">disposed</span><span class="token punctuation">(</span>by<span class="token punctuation">:</span> disposeBag<span class="token punctuation">)</span>
+
+          cancelButton<span class="token punctuation">.</span>rx<span class="token punctuation">.</span><span class="token function">tap</span>
+              <span class="token punctuation">.</span><span class="token function">bind</span><span class="token punctuation">(</span>to<span class="token punctuation">:</span> viewModel<span class="token punctuation">.</span>cancel<span class="token punctuation">)</span>
+              <span class="token punctuation">.</span><span class="token function">disposed</span><span class="token punctuation">(</span>by<span class="token punctuation">:</span> disposeBag<span class="token punctuation">)</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+</code></pre></div><blockquote><p>让我们看看ViewModel</p></blockquote> <div class="language-js extra-class"><pre class="language-js"><code><span class="token keyword">import</span> RxSwift
+
+<span class="token keyword">class</span> <span class="token class-name">LanguageListViewModel</span> <span class="token punctuation">{</span>
+
+    <span class="token comment">// MARK: - Inputs</span>
+    <span class="token keyword">let</span> selectLanguage<span class="token punctuation">:</span> AnyObserver<span class="token operator">&lt;</span>String<span class="token operator">&gt;</span>
+    <span class="token keyword">let</span> cancel<span class="token punctuation">:</span> AnyObserver<span class="token operator">&lt;</span>Void<span class="token operator">&gt;</span>
+
+    <span class="token comment">// MARK: - Outputs</span>
+    <span class="token keyword">let</span> languages<span class="token punctuation">:</span> Observable<span class="token operator">&lt;</span><span class="token punctuation">[</span>String<span class="token punctuation">]</span><span class="token operator">&gt;</span>
+    <span class="token keyword">let</span> didSelectLanguage<span class="token punctuation">:</span> Observable<span class="token operator">&lt;</span>String<span class="token operator">&gt;</span>
+    <span class="token keyword">let</span> didCancel<span class="token punctuation">:</span> Observable<span class="token operator">&lt;</span>Void<span class="token operator">&gt;</span>
+
+    <span class="token function">init</span><span class="token punctuation">(</span><span class="token parameter">githubService<span class="token punctuation">:</span> GithubService <span class="token operator">=</span> <span class="token function">GithubService</span><span class="token punctuation">(</span><span class="token punctuation">)</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        self<span class="token punctuation">.</span>languages <span class="token operator">=</span> githubService<span class="token punctuation">.</span><span class="token function">getLanguageList</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        <span class="token keyword">let</span> _selectLanguage <span class="token operator">=</span> PublishSubject<span class="token operator">&lt;</span>String<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>selectLanguage <span class="token operator">=</span> _selectLanguage<span class="token punctuation">.</span><span class="token function">asObserver</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>didSelectLanguage <span class="token operator">=</span> _selectLanguage<span class="token punctuation">.</span><span class="token function">asObservable</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        <span class="token keyword">let</span> _cancel <span class="token operator">=</span> PublishSubject<span class="token operator">&lt;</span>Void<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>cancel <span class="token operator">=</span> _cancel<span class="token punctuation">.</span><span class="token function">asObserver</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>didCancel <span class="token operator">=</span> _cancel<span class="token punctuation">.</span><span class="token function">asObservable</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre></div><blockquote><p>model无需多说</p></blockquote> <div class="language-js extra-class"><pre class="language-js"><code><span class="token keyword">import</span> Foundation
+
+struct Repository <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> fullName<span class="token punctuation">:</span> String
+    <span class="token keyword">let</span> description<span class="token punctuation">:</span> String
+    <span class="token keyword">let</span> starsCount<span class="token punctuation">:</span> Int
+    <span class="token keyword">let</span> url<span class="token punctuation">:</span> String
+<span class="token punctuation">}</span>
+
+extension Repository <span class="token punctuation">{</span>
+    init<span class="token operator">?</span><span class="token punctuation">(</span><span class="token keyword">from</span> json<span class="token punctuation">:</span> <span class="token punctuation">[</span>String<span class="token punctuation">:</span> Any<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        guard
+            <span class="token keyword">let</span> fullName <span class="token operator">=</span> json<span class="token punctuation">[</span><span class="token string">&quot;full_name&quot;</span><span class="token punctuation">]</span> <span class="token keyword">as</span><span class="token operator">?</span> String<span class="token punctuation">,</span>
+            <span class="token keyword">let</span> description <span class="token operator">=</span> json<span class="token punctuation">[</span><span class="token string">&quot;description&quot;</span><span class="token punctuation">]</span> <span class="token keyword">as</span><span class="token operator">?</span> String<span class="token punctuation">,</span>
+            <span class="token keyword">let</span> starsCount <span class="token operator">=</span> json<span class="token punctuation">[</span><span class="token string">&quot;stargazers_count&quot;</span><span class="token punctuation">]</span> <span class="token keyword">as</span><span class="token operator">?</span> Int<span class="token punctuation">,</span>
+            <span class="token keyword">let</span> url <span class="token operator">=</span> json<span class="token punctuation">[</span><span class="token string">&quot;html_url&quot;</span><span class="token punctuation">]</span> <span class="token keyword">as</span><span class="token operator">?</span> String
+        <span class="token keyword">else</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> nil <span class="token punctuation">}</span>
+
+        self<span class="token punctuation">.</span><span class="token function">init</span><span class="token punctuation">(</span>fullName<span class="token punctuation">:</span> fullName<span class="token punctuation">,</span> description<span class="token punctuation">:</span> description<span class="token punctuation">,</span> starsCount<span class="token punctuation">:</span> starsCount<span class="token punctuation">,</span> url<span class="token punctuation">:</span> url<span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+extension Repository<span class="token punctuation">:</span> Equatable <span class="token punctuation">{</span>
+    <span class="token keyword">static</span> func <span class="token operator">==</span> <span class="token punctuation">(</span>lhs<span class="token punctuation">:</span> Repository<span class="token punctuation">,</span> rhs<span class="token punctuation">:</span> Repository<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> Bool <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> lhs<span class="token punctuation">.</span>fullName <span class="token operator">==</span> rhs<span class="token punctuation">.</span>fullName
+            <span class="token operator">&amp;&amp;</span> lhs<span class="token punctuation">.</span>description <span class="token operator">==</span> rhs<span class="token punctuation">.</span>description
+            <span class="token operator">&amp;&amp;</span> lhs<span class="token punctuation">.</span>starsCount <span class="token operator">==</span> rhs<span class="token punctuation">.</span>starsCount
+            <span class="token operator">&amp;&amp;</span> lhs<span class="token punctuation">.</span>url <span class="token operator">==</span> rhs<span class="token punctuation">.</span>url
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre></div></div> <footer class="page-edit"><!----> <div class="last-updated"><span class="prefix">上次更新:</span> <span class="time">2019-12-20 19:08:47</span></div></footer> <!----> </main></div><div class="global-ui"></div></div>
+    <script src="/blog/dist/assets/js/app.8a71f5eb.js" defer></script><script src="/blog/dist/assets/js/2.fc5b6cde.js" defer></script><script src="/blog/dist/assets/js/9.1644c349.js" defer></script>
+  </body>
+</html>
