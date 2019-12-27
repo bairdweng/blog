@@ -1,3 +1,3 @@
-https://BairdWeng.github.io/blog/dist
+https://bairdweng.github.io/blog/dist
 
 

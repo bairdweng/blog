@@ -4,7 +4,7 @@ module.exports = {
 	locales: {
 		'/': {
 			lang: 'zh-CN',
-			title: 'BairdWeng',
+			title: 'bairdweng',
 			description: '杂谈',
 		},
 	},
@@ -59,7 +59,7 @@ function genSidebarConfig() {
 		{
 			title: 'Web',
 			collapsable: true,
-			children: ['web/start'],
+			children: ['web/start','web/css'],
 		},
 		{
 			title: '设计模式',
